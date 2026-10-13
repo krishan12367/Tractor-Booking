@@ -1,0 +1,295 @@
+﻿
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Massey Ferguson Tractor Booking</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial,sans-serif;
+            background: #f3f5f3;
+            color: #222
+        }
+
+        header {
+            background: #a82020;
+            color: white;
+            padding: 22px 15px;
+            text-align: center
+        }
+
+            header h1 {
+                margin: 0;
+                font-size: 25px
+            }
+
+            header p {
+                margin-bottom: 0
+            }
+
+        .container {
+            max-width: 550px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px #0001
+        }
+
+        .tractor {
+            text-align: center;
+            background: #fff0f0;
+            padding: 20px;
+            border-radius: 12px
+        }
+
+            .tractor .emoji {
+                font-size: 65px
+            }
+
+        h2 {
+            color: #a82020
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: bold
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 7px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white
+        }
+
+        .total {
+            background: #eaf7ec;
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center
+        }
+
+            .total strong {
+                font-size: 28px;
+                color: #167333
+            }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            border: 0;
+            border-radius: 9px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer
+        }
+
+        .book {
+            background: #167333;
+            color: white
+        }
+
+        .wa {
+            background: #20ad62;
+            color: white
+        }
+
+        .note {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🚜 Massey Ferguson Tractor</h1>
+        <p>Online Tractor Booking Service</p>
+    </header>
+
+    <div class="container">
+        <div class="tractor">
+            <div class="emoji">🚜</div>
+            <h2>Tractor Book Karein</h2>
+            <p>Din ya bigha ke hisaab se kiraya</p>
+        </div>
+
+        <form id="bookingForm">
+            <label>Booking kis hisaab se chahiye?</label>
+            <select id="type">
+                <option value="bigha">Bigha ke hisaab se</option>
+                <option value="din">Din ke hisaab se</option>
+            </select>
+
+            <label id="qtyLabel">Kitne bigha khet hai?</label>
+            <input type="number" id="qty" min="1" step="any"
+                   value="1" required>
+
+            <label id="rateLabel">Ek bigha ka kiraya (₹)</label>
+            <input type="number" id="rate" min="0" step="any"
+                   value="500" required>
+
+            <label>Tractor kab chahiye?</label>
+            <input type="date" id="date" required>
+
+            <label>Kisan ka naam</label>
+            <input type="text" id="name" placeholder="Apna naam likhein" required>
+
+            <label>Mobile number</label>
+            <input type="tel" id="phone" inputmode="numeric"
+                   pattern="[0-9]{10}" maxlength="10"
+                   placeholder="10 digit mobile number" required>
+
+            <label>Gaon aur khet ki location</label>
+            <input type="text" id="village"
+                   placeholder="Gaon ka naam likhein" required>
+
+            <label>Kheti ka kaam</label>
+            <select id="work">
+                <option>Hal chalana</option>
+                <option>Rotavator</option>
+                <option>Buwai</option>
+                <option>Dusra kaam</option>
+            </select>
+
+            <div class="total">
+                <div>Andazee kul kiraya</div>
+                <strong id="total">₹500</strong>
+                <p class="note">Final kiraya tractor owner se confirm karein.</p>
+            </div>
+
+            <button class="book" type="submit">
+                Booking Details Taiyar Karein
+            </button>
+            <button class="wa" type="button" id="whatsapp">
+                WhatsApp Par Booking Bhejein
+            </button>
+        </form>
+    </div>
+
+    <footer>
+        Massey Ferguson Tractor Service 🚜
+    </footer>
+
+    <script>
+// APNA WHATSAPP NUMBER YAHAN DAALEIN
+// Country code 91 ke saath, bina + ke
+const OWNER_WHATSAPP = "91XXXXXXXXXX";
+
+const type = document.getElementById("type");
+const qty = document.getElementById("qty");
+const rate = document.getElementById("rate");
+const total = document.getElementById("total");
+let bookingReady = false;
+
+function calculate() {
+  const isBigha = type.value === "bigha";
+
+  document.getElementById("qtyLabel").textContent =
+    isBigha ? "Kitne bigha khet hai?" : "Kitne din tractor chahiye?";
+
+  document.getElementById("rateLabel").textContent =
+    isBigha ? "Ek bigha ka kiraya (₹)" : "Ek din ka kiraya (₹)";
+
+  qty.min = isBigha ? "0.1" : "1";
+  qty.step = isBigha ? "any" : "1";
+
+  const amount = Math.max(0, Number(qty.value) || 0) *
+                 Math.max(0, Number(rate.value) || 0);
+
+  total.textContent = "₹" + amount.toLocaleString("en-IN");
+  bookingReady = false;
+}
+
+type.addEventListener("change", calculate);
+qty.addEventListener("input", calculate);
+rate.addEventListener("input", calculate);
+
+function getBookingMessage() {
+  const amount = (Number(qty.value) || 0) *
+                 (Number(rate.value) || 0);
+  const unit = type.value === "bigha" ? "bigha" : "din";
+
+  return `🚜 MASSEY FERGUSON TRACTOR BOOKING
+
+Kisan ka naam: ${document.getElementById("name").value}
+Mobile: ${document.getElementById("phone").value}
+Booking date: ${document.getElementById("date").value}
+Booking: ${qty.value} ${unit}
+Rate: ₹${rate.value} per ${unit}
+Andazee kiraya: ₹${amount}
+Kaam: ${document.getElementById("work").value}
+Gaon/Khet: ${document.getElementById("village").value}
+
+Kripya booking confirm karein.`;
+}
+
+function validateForm() {
+  const form = document.getElementById("bookingForm");
+  if (!form.reportValidity()) return false;
+
+  if (Number(qty.value) <= 0 || Number(rate.value) < 0) {
+    alert("Quantity aur rate sahi bharein.");
+    return false;
+  }
+  return true;
+}
+
+document.getElementById("bookingForm")
+  .addEventListener("submit", function(e) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    bookingReady = true;
+    alert("Booking details taiyar hain. Ab WhatsApp button dabayein.");
+  });
+
+document.getElementById("whatsapp")
+  .addEventListener("click", function() {
+    if (!validateForm()) return;
+
+    if (OWNER_WHATSAPP.includes("X")) {
+      alert("Pehle code mein OWNER_WHATSAPP ke andar apna WhatsApp number daalein.");
+      return;
+    }
+
+    const message = encodeURIComponent(getBookingMessage());
+    window.open(
+      "https://wa.me/" + OWNER_WHATSAPP + "?text=" + message,
+      "_blank"
+    );
+  });
+
+// Aaj ki date se pehle booking nahi
+const today = new Date();
+const localToday = new Date(
+  today.getTime() - today.getTimezoneOffset() * 60000
+).toISOString().split("T")[0];
+
+document.getElementById("date").min = localToday;
+document.getElementById("date").value = localToday;
+
+calculate();
+    </script>
+</body>
+</html>
